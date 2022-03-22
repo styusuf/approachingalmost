@@ -219,14 +219,8 @@ def micro_precision(y_true, y_pred):
         # calculate fp for current class and update overall fp
         fp += false_positive(temp_true, temp_pred)
 
-        # calculate precision for current class
-        temp_precision = tp / (tp + fp)
-
-        # keep adding precision for all classes
-        precision += temp_precision
-
     # calculate and return average precision over all classes
-    precision /= num_classes
+    precision = tp / (tp + fp)
     return precision
 
 def weighted_precision(y_true, y_pred):
@@ -266,3 +260,93 @@ def weighted_precision(y_true, y_pred):
     # calculate overall precision by dividing by total number of samples
     overall_precision = precision / len(y_true)
     return overall_precision
+
+def weighted_f1(y_true, y_pred):
+    """
+    Function to calculate weighted f1 score
+    :param y_true: list of true values
+    :param y_proba: list of predicted values
+    :return: weighted f1 score
+    """
+
+    # find the number of classes by taking length of unique values in true list
+    num_classes = len(np.unique(y_true))
+
+    # create class:sample count dictionary
+    class_counts = Counter(y_true)
+
+    # initialize f1 to 0
+    f1 = 0
+
+    # loop over all classes
+    for class_ in range(num_classes):
+        # all classes except current are considered negative
+        temp_true = [1 if p == class_ else 0 for p in y_true]
+        temp_pred = [1 if p == class_ else 0 for p in y_pred]
+
+        p = precision(temp_true, temp_pred)
+        r = recall(temp_true, temp_pred)
+
+        # calculate f1 of class
+        if p + r != 0:
+            temp_f1 = 2 * p * r / (p+r)
+        else:
+            temp_f1 = 0
+
+        # multiply f1 with count of samples in class
+        weighted_f1 = class_counts[class_] * temp_f1
+
+        # add to f1 precision
+        f1 += weighted_f1
+
+    # calculate overall F1 by dividing by total number of samples
+    overall_f1 = f1 / len(y_true)
+
+    return overall_f1
+
+def pk(y_true, y_pred, k):
+    """
+    This function calculates precision at k for a single sample
+    :param y_true: list of values, actual classes
+    :param y_pred: list of values, predicted classes
+    :param k: the value of k
+    :return: precision at a given value k
+    """
+
+    # if k is 0, return 0
+    if k == 0:
+        return 0
+
+    # we are interested only in the top-k predictions
+    y_pred = y_pred[:k]
+    # convert predictions to set
+    pred_set = set(y_pred)
+    # convert actual values to set
+    true_set = set(y_true)
+    # find common values
+    common_values = pred_set.intersection(true_set)
+    # return length of common values over k
+    return len(common_values) / len(y_pred[:k])
+
+def apk(y_true, y_pred, k):
+    """
+    This function calculates precision at k for a single sample
+    :param y_true: list of values, actual classes
+    :param y_pred: list of values, predicted classes
+    :param k: the value of k
+    :return: precision at a given value k
+    """
+
+    # initialize p@k list of values
+    pk_values = []
+    # loop over all k. from 1 to k+1
+    for i in range(i, k+1):
+        # calculate p@i and append to list
+        pk_values.append(pk(y_true, y_pred, i))
+
+    # if we have no values in the list, return 0
+    if len(pk_values) == 0:
+        return 0
+    
+    # else, we return the sum of list over length of list
+    return sum(pk_values) / len(pk_values)
