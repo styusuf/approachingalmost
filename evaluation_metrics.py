@@ -350,3 +350,164 @@ def apk(y_true, y_pred, k):
     
     # else, we return the sum of list over length of list
     return sum(pk_values) / len(pk_values)
+
+def mapk(y_true, y_pred, k):
+    """
+    This function calculates mean avg precision at k for all samples
+    :param y_true: list of values, actual classes
+    :param y_pred: list of values, predicted classes
+    :param k: the value of k
+    :return: mean avg precision at a given value k
+    """
+    # initialize empty list for apk values
+    apk_values = []
+    # loop over all samples
+    for i in range(len(y_true)):
+        # store apk values for every sample
+        apk_values.append(apk(y_true[i], y_pred[i], k=k))
+
+    # return mean of apk values list
+    return sum(apk_values) / len(apk_values)
+
+# Regression Evaluation Metrics
+
+def mean_absolute_error(y_true, y_pred):
+    """
+    This function calculates mae
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: mean absolute error
+    """
+    # initialize error at 0
+    error = 0
+    # loop over all samples in the true and predicted list
+    for yt, yp in zip(y_true, y_pred):
+        # calcalate absolute error and add to error
+        error += np.abs(yt - yp)
+    # return mean error
+    return error / len(y_true)
+
+def mean_squared_error(y_true, y_pred):
+    """
+    This function calculates mse
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: mean squared error
+    """
+    # initialize error at 0
+    error = 0
+    # loop over all samples in the true and predicted list
+    for yt, yp in zip(y_true, y_pred):
+        # calcalate absolute error and add to error
+        error += (yt - yp) ** 2
+    # return mean error
+    return error / len(y_true)
+
+def root_mean_squared_error(y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    # return sqrt of mse
+    return np.sqrt(mse)
+
+def mean_squared_log_error(y_true, y_pred):
+    """
+    This function calculates msle
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: mean squared logarithmic error
+    """
+    # initialize error at 0
+    error = 0
+    # loop over all samples in the true and predicted list
+    for yt, yp in zip(y_true, y_pred):
+        # calcalate absolute error and add to error
+        error += (np.log(1 + yt) - np.log(1 + yp)) ** 2
+    # return mean error
+    return error / len(y_true)
+
+def root_mean_squared_log_error(y_true, y_pred):
+    msle = mean_squared_log_error(y_true, y_pred)
+    # return sqrt of msle
+    return np.sqrt(msle)
+
+def mean_percentage_error(y_true, y_pred):
+    """
+    This function calculates mpe
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: mean percentage error
+    """
+    # initialize error at 0
+    error = 0
+    # loop over all samples in the true and predicted list
+    for yt, yp in zip(y_true, y_pred):
+        # calcalate percentage error and add to error
+        error += (yt - yp) / yt
+    # return mean error
+    return error / len(y_true)
+
+def mean_abs_percentage_error(y_true, y_pred):
+    """
+    This function calculates MAPE
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: mean absolute percentage error
+    """
+    # initialize error at 0
+    error = 0
+    # loop over all samples in the true and predicted list
+    for yt, yp in zip(y_true, y_pred):
+        # calcalate percentage error and add to error
+        error += np.abs(yt - yp) / yt
+    # return mean percentage error
+    return error / len(y_true)
+
+def r2(y_true, y_pred):
+    """
+    This function calculates r-squared score
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :return: r2 score
+    """
+
+    # calculate the mean value of true values
+    mean_true_value = np.mean(y_true)
+
+    # initialize numerator and denominator to 0
+    numerator = 0
+    denominator = 0
+
+    # loop over all true ad predicted values
+    for yt, yp in zip(y_true, y_pred):
+        # update numerator
+        numerator += (yt - yp) ** 2
+        # update denominator
+        denominator += (yt - mean_true_value) ** 2
+    # calculate the ratio
+    ratio = numerator / denominator
+    # return 1 - ratio
+    return 1 - ratio
+
+def mcc(y_true, y_pred):
+    """
+    This function calculates Matthew's Correlation Coefficient for binary classification.
+    :param y_true: list of true values
+    :param y_pred: list of predicted values
+    :return: mcc score
+    """
+    tp = true_positive(y_true, y_pred)
+    tn = true_negative(y_true, y_pred)
+    fp = false_positive(y_true, y_pred)
+    fn = false_negative(y_true, y_pred)
+
+    numerator = (tp * tn) - (fp * fn)
+
+    denominator = (
+        (tp + fp) *
+        (fn + tn) *
+        (fp + tn) *
+        (tp + fn)
+    )
+
+    denominator = denominator ** 0.5
+
+    return numerator / denominator
